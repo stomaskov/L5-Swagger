@@ -18,7 +18,7 @@ class SwaggerController extends BaseController
         $packagesWithDocs = config('swagger');
         if($packagesWithDocs) {
             foreach($packagesWithDocs as $package => $conf) {
-                if($conf['routes']['api'] == $currentPath) {
+                if($currentPath == $conf['routes']['api'] || $conf['routes']['docs'].'/'.$conf['paths']['docs_json']   ) {
                     $this->packageSwaggerConf = $conf;
                 }
             }
@@ -34,11 +34,18 @@ class SwaggerController extends BaseController
      */
     public function docs($jsonFile = null)
     {
-        $filePath = config('l5-swagger.paths.docs').'/'.
-            (! is_null($jsonFile) ? $jsonFile : config('l5-swagger.paths.docs_json', 'api-docs.json'));
+        // first check if pre-generated file exists
+        $filePath = $this->packageSwaggerConf['paths']['annotations'] . '/Docs/' .
+            $this->packageSwaggerConf['paths']['docs_json'];
 
-        if (! File::exists($filePath)) {
-            abort(404, 'Cannot find '.$filePath);
+        // else try to use generated docs
+        if( ! File::exists($filePath)) {
+            $filePath = config('l5-swagger.paths.docs').'/'.
+                (! is_null($jsonFile) ? $jsonFile : config('l5-swagger.paths.docs_json', 'api-docs.json'));
+
+            if (! File::exists($filePath)) {
+                abort(404, 'Cannot find '.$filePath);
+            }
         }
 
         $content = File::get($filePath);
