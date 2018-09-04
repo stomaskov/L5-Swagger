@@ -10,6 +10,21 @@ use Illuminate\Routing\Controller as BaseController;
 
 class SwaggerController extends BaseController
 {
+    private $packageSwaggerConf;
+
+    public function __construct()
+    {
+        $currentPath = Request::path();
+        $packagesWithDocs = config('swagger');
+        if($packagesWithDocs) {
+            foreach($packagesWithDocs as $package => $conf) {
+                if($conf['routes']['api'] == $currentPath) {
+                    $this->packageSwaggerConf = $conf;
+                }
+            }
+        }
+    }
+
     /**
      * Dump api-docs.json content endpoint.
      *
@@ -41,7 +56,13 @@ class SwaggerController extends BaseController
     public function api()
     {
         if (config('l5-swagger.generate_always')) {
-            Generator::generateDocs();
+            $packagesWithDocs = config('swagger');
+            if($packagesWithDocs) {
+                foreach($packagesWithDocs as $package => $conf) {
+                    $this->info('Regenerating docs for: ' . $package);
+                    Generator::generateDocs($conf);
+                }
+            }
         }
 
         if ($proxy = config('l5-swagger.proxy')) {
@@ -55,7 +76,7 @@ class SwaggerController extends BaseController
         $response = Response::make(
             view('l5-swagger::index', [
                 'secure' => Request::secure(),
-                'urlToDocs' => route('l5-swagger.docs', config('l5-swagger.paths.docs_json', 'api-docs.json')),
+                'urlToDocs' => route('l5-swagger.docs', $this->packageSwaggerConf['paths']['docs_json']),
                 'operationsSorter' => config('l5-swagger.operations_sort'),
                 'configUrl' => config('l5-swagger.additional_config_url'),
                 'validatorUrl' => config('l5-swagger.validator_url'),
@@ -70,6 +91,7 @@ class SwaggerController extends BaseController
      * Display Oauth2 callback pages.
      *
      * @return string
+     * @throws \L5Swagger\Exceptions\L5SwaggerException
      */
     public function oauth2Callback()
     {

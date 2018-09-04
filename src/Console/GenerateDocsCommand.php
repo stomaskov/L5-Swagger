@@ -28,7 +28,12 @@ class GenerateDocsCommand extends Command
      */
     public function handle()
     {
-        $this->info('Regenerating docs');
-        Generator::generateDocs();
+        $packagesWithDocs = config('swagger');
+        if($packagesWithDocs) {
+            foreach($packagesWithDocs as $package => $conf) {
+                $this->info('Regenerating docs for: ' . $package);
+                Generator::generateDocs($conf);
+            }
+        }
     }
 }

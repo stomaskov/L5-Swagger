@@ -48,20 +48,22 @@ class Generator
      */
     protected $yamlCopyRequired;
 
-    public function __construct()
+    public function __construct($package)
     {
-        $this->appDir = config('l5-swagger.paths.annotations');
-        $this->docDir = config('l5-swagger.paths.docs');
-        $this->docsFile = $this->docDir.'/'.config('l5-swagger.paths.docs_json', 'api-docs.json');
-        $this->yamlDocsFile = $this->docDir.'/'.config('l5-swagger.paths.docs_yaml', 'api-docs.yaml');
-        $this->excludedDirs = config('l5-swagger.paths.excludes');
-        $this->constants = config('l5-swagger.constants') ?: [];
-        $this->yamlCopyRequired = config('l5-swagger.generate_yaml_copy', false);
+        $this->appDir = $package['paths']['annotations'] ?? config('l5-swagger.paths.annotations');
+        $this->docDir = $package['paths']['docs'] ?? config('l5-swagger.paths.docs');
+        $this->docsFile = $this->docDir.'/' .
+            ($package['paths']['docs_json'] ?? config('l5-swagger.paths.docs_json', 'api-docs.json'));
+        $this->yamlDocsFile = $this->docDir.'/' .
+            ($package['paths']['docs_yaml'] ?? config('l5-swagger.paths.docs_yaml', 'api-docs.yaml'));
+        $this->excludedDirs = $package['paths']['excludes'] ?? config('l5-swagger.paths.excludes');
+        $this->constants = $package['constants'] ?? config('l5-swagger.constants') ?: [];
+        $this->yamlCopyRequired = $package['generate_yaml_copy'] ?? config('l5-swagger.generate_yaml_copy', false);
     }
 
-    public static function generateDocs()
+    public static function generateDocs($package)
     {
-        (new static)->prepareDirectory()
+        (new static($package))->prepareDirectory()
             ->defineConstants()
             ->scanFilesForDocumentation()
             ->populateServers()
@@ -73,6 +75,7 @@ class Generator
      * Check directory structure and permissions.
      *
      * @return Generator
+     * @throws L5SwaggerException
      */
     protected function prepareDirectory()
     {
@@ -156,6 +159,7 @@ class Generator
      * Save documentation as json file.
      *
      * @return Generator
+     * @throws \Exception
      */
     protected function saveJson()
     {
@@ -170,7 +174,7 @@ class Generator
     /**
      * Save documentation as yaml file.
      *
-     * @return Generator
+     * @return void
      */
     protected function makeYamlCopy()
     {
