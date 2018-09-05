@@ -1,6 +1,6 @@
 {
-  "name": "darkaonline/l5-swagger",
-  "description": "Swagger integration to Laravel 5",
+  "name": "sina/l5-swagger",
+  "description": "Swagger integration to Laravel 5. Modified to allow multiple packages to register documentation",
   "keywords": [
     "laravel",
     "swagger",
@@ -9,25 +9,22 @@
   "license": "MIT",
   "authors": [
     {
-      "name": "Darius Matulionis",
-      "email": "darius@matulionis.lt"
+      "name": "Sinisa Tomaskovic",
+      "email": "stomaskov@gmail.com"
     }
   ],
   "require": {
     "php": ">=7.1.3",
     "laravel/framework": "5.6.*|5.7.*",
-    "zircote/swagger-php": "~2.0|3.*",
+    "zircote/swagger-php": "3.*",
     "swagger-api/swagger-ui": "^3.0",
     "symfony/yaml": "^4.1"
   },
   "require-dev": {
     "phpunit/phpunit": "7.*",
     "mockery/mockery": "1.*",
-    "orchestra/testbench": "3.6.*",
+    "orchestra/testbench": "3.7.*",
     "php-coveralls/php-coveralls": "^2.0"
-  },
-  "suggest": {
-    "zircote/swagger-php:~2.0": "!!! Require Swagger-PHP ~2.0 for @SWG annotations support !!!"
   },
   "autoload": {
     "psr-4": {

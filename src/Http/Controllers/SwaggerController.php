@@ -10,6 +10,21 @@ use Illuminate\Routing\Controller as BaseController;
 
 class SwaggerController extends BaseController
 {
+    private $packageSwaggerConf;
+
+    public function __construct()
+    {
+        $currentPath = Request::path();
+        $packagesWithDocs = config('swagger');
+        if($packagesWithDocs) {
+            foreach($packagesWithDocs as $package => $conf) {
+                if($currentPath == $conf['routes']['api'] || $conf['routes']['docs'].'/'.$conf['paths']['docs_json']   ) {
+                    $this->packageSwaggerConf = $conf;
+                }
+            }
+        }
+    }
+
     /**
      * Dump api-docs.json content endpoint.
      *
@@ -19,11 +34,18 @@ class SwaggerController extends BaseController
      */
     public function docs($jsonFile = null)
     {
-        $filePath = config('l5-swagger.paths.docs').'/'.
-            (! is_null($jsonFile) ? $jsonFile : config('l5-swagger.paths.docs_json', 'api-docs.json'));
+        // first check if pre-generated file exists
+        $filePath = $this->packageSwaggerConf['paths']['annotations'] . '/Docs/' .
+            $this->packageSwaggerConf['paths']['docs_json'];
 
-        if (! File::exists($filePath)) {
-            abort(404, 'Cannot find '.$filePath);
+        // else try to use generated docs
+        if( ! File::exists($filePath)) {
+            $filePath = config('l5-swagger.paths.docs').'/'.
+                (! is_null($jsonFile) ? $jsonFile : config('l5-swagger.paths.docs_json', 'api-docs.json'));
+
+            if (! File::exists($filePath)) {
+                abort(404, 'Cannot find '.$filePath);
+            }
         }
 
         $content = File::get($filePath);
@@ -41,7 +63,13 @@ class SwaggerController extends BaseController
     public function api()
     {
         if (config('l5-swagger.generate_always')) {
-            Generator::generateDocs();
+            $packagesWithDocs = config('swagger');
+            if($packagesWithDocs) {
+                foreach($packagesWithDocs as $package => $conf) {
+                    $this->info('Regenerating docs for: ' . $package);
+                    Generator::generateDocs($conf);
+                }
+            }
         }
 
         if ($proxy = config('l5-swagger.proxy')) {
@@ -55,7 +83,7 @@ class SwaggerController extends BaseController
         $response = Response::make(
             view('l5-swagger::index', [
                 'secure' => Request::secure(),
-                'urlToDocs' => route('l5-swagger.docs', config('l5-swagger.paths.docs_json', 'api-docs.json')),
+                'urlToDocs' => route('l5-swagger.docs', $this->packageSwaggerConf['paths']['docs_json']),
                 'operationsSorter' => config('l5-swagger.operations_sort'),
                 'configUrl' => config('l5-swagger.additional_config_url'),
                 'validatorUrl' => config('l5-swagger.validator_url'),
@@ -70,6 +98,7 @@ class SwaggerController extends BaseController
      * Display Oauth2 callback pages.
      *
      * @return string
+     * @throws \L5Swagger\Exceptions\L5SwaggerException
      */
     public function oauth2Callback()
     {

@@ -23,3 +23,20 @@ $router->get(config('l5-swagger.routes.oauth2_callback'), [
     'middleware' => config('l5-swagger.routes.middleware.oauth2_callback', []),
     'uses' => '\L5Swagger\Http\Controllers\SwaggerController@oauth2Callback',
 ]);
+
+$packagesWithDocs = config('swagger');
+if($packagesWithDocs) {
+    foreach($packagesWithDocs as $package => $conf) {
+        $router->get($conf['routes']['api'], [
+            'as' => $package.'.l5-swagger.api',
+            'middleware' => $conf['routes']['middleware']['api'] ?? [],
+            'uses' => '\L5Swagger\Http\Controllers\SwaggerController@api',
+        ]);
+
+        $router->any($conf['routes']['docs'].'/{jsonFile?}', [
+            'as' => 'l5-swagger.docs',
+            'middleware' => $conf['routes']['middleware']['docs'] ?? [],
+            'uses' => '\L5Swagger\Http\Controllers\SwaggerController@docs',
+        ]);
+    }
+}
