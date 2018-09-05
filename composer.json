@@ -1,6 +1,6 @@
 {
-  "name": "efdi/l5-swagger",
-  "description": "Swagger integration to Laravel 5",
+  "name": "sina/l5-swagger",
+  "description": "Swagger integration to Laravel 5. Modified to allow multiple packages to register documentation",
   "keywords": [
     "laravel",
     "swagger",
@@ -25,9 +25,6 @@
     "mockery/mockery": "1.*",
     "orchestra/testbench": "3.7.*",
     "php-coveralls/php-coveralls": "^2.0"
-  },
-  "suggest": {
-    "zircote/swagger-php:~2.0": "!!! Require Swagger-PHP ~2.0 for @SWG annotations support !!!"
   },
   "autoload": {
     "psr-4": {
