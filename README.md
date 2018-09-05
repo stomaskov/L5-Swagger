@@ -4,6 +4,12 @@ L5 Swagger - OpenApi or Swagger Specification for your Laravel project made easy
 ==========
 
 This package is a fork of [DarkaOnLine/L5-Swagger](https://github.com/DarkaOnLine/L5-Swagger).
+It was created to allow multiple packages in Laravel installation to register API documentation.
+The generator will search for _"swagger"_ key in config of each package.
+
+Additional option is added - (bool) _enableGenerateDocs_ that when set to false will 
+prevent documentation generation for the module and instead try to use pre-generated json
+file in /Docs folder of a package.
 
 Original package is a wrapper of [Swagger-php](https://github.com/zircote/swagger-php) and [swagger-ui](https://github.com/swagger-api/swagger-ui) adapted to work with Laravel 5.
 
